@@ -1,0 +1,18 @@
+name: build server image
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'server/**'
+      - '.github/workflows/server.yaml'
+    branches:
+      - main
+
+jobs: 
+  build:
+    name: 'server:build'
+    runs-on: ubuntu-latest
+    steps:
+    
+
