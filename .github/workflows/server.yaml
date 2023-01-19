@@ -28,7 +28,7 @@ jobs:
           file: ./server/Dockerfile
           platforms: linux/arm64, linux/amd64
           push: true
-          tags: ghcr.io/elliemehl/KubeApp:server-${{ github.sha }}
+          tags: ghcr.io/elliemehl/kube_app:server-${{ github.sha }}
   test:
     name: 'server:test'
     runs-on: ubuntu-latest
@@ -44,13 +44,13 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Pull and run tests
         run: |
-          docker pull ghcr.io/elliemehl/KubeApp:server-${{ github.sha }}
-          docker run -d -p 8080:8080 -e APP_PORT=8080 ghcr.io/elliemehl/KubeApp:server-${{ github.sha }}
+          docker pull ghcr.io/elliemehl/kube_app:server-${{ github.sha }}
+          docker run -d -p 8080:8080 -e APP_PORT=8080 ghcr.io/elliemehl/kube_app:server-${{ github.sha }}
           sleep 10
           curl localhost:8080/api/status
           exit $?
       - name: Push image
         run: |
-          docker tag ghcr.io/elliemehl/KubeApp:server-${{ github.sha }} ghcr.io/elliemehl/KubeApp:server
-          docker push ghcr.io/elliemehl/KubeApp:server
+          docker tag ghcr.io/elliemehl/kube_app:server-${{ github.sha }} ghcr.io/elliemehl/kube_app:server
+          docker push ghcr.io/elliemehl/kube_app:server
 
