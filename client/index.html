@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<body>
+<button onclick="magic()"> Ooo la la such a fun button </button>
+</body>
+
+<script>
+
+function makeRequest(method, url){
+        return new Promise(function(resolve, reject){
+          const xhr = new XMLHttpRequest();
+          xhr.open(method, url);
+          xhr.onload = function(){
+              if (xhr.status >=200 && xhr.status < 300){
+                resolve(xhr.response);
+              } else {
+                reject({
+                  status: xhr.status,
+                  statusText: 'loser'
+                });
+              }
+          };
+          xhr.onerror = function(){
+            reject({
+              status: xhr.status,
+              statusText: xhr.statusText
+            });
+          };
+          xhr.send();
+        });
+      };
+
+async function magic() {
+
+let result = await makeRequest("GET", "http://localhost:8000" + "/api/hello")
+console.log(result)
+
+}
+</script>
+
+</html>
