@@ -1,17 +1,17 @@
-name: build server image
+name: build client image
 
 on:
   workflow_dispatch:
   push:
     paths:
-      - 'server/**'
-      - '.github/workflows/server.yaml'
+      - 'client/**'
+      - '.github/workflows/client.yaml'
     branches:
       - main
 
 jobs: 
   build:
-    name: 'server:build'
+    name: 'client:build'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -24,15 +24,14 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/build-push-action@v3
         with:
-          context: ./server
-          file: ./server/Dockerfile
+          context: ./client
+          file: ./client/Dockerfile
           platforms: linux/arm64, linux/amd64
           push: true
-          tags: ghcr.io/elliemehl/KubeApp:server-${{ github.sha }}
-tests:
-  name: 'server:test'
+          tags: ghcr.io/elliemehl/KubeApp:client-${{ github.sha }}
+test:
+  name: 'client:test'
   runs-on: ubuntu-latest
-  needs: [ build ]
   steps:
     - uses: actions/checkout@v3
     - uses: docker/setup-qemu-action@v2
@@ -44,13 +43,13 @@ tests:
           password: ${{ secrets.GITHUB_TOKEN }}
     - name: Pull and run tests
       run: |
-        docker pull ghcr.io/elliemehl/KubeApp:server-${{ github.sha }}
-        docker run -d -p 8080:8080 -e APP_PORT=8080 ghcr.io/elliemehl/KubeApp:server-${{ github.sha }}
+        docker pull ghcr.io/elliemehl/KubeApp:client-${{ github.sha }}
+        docker run -d -p 8080:8080 -e APP_PORT=8080 ghcr.io/elliemehl/KubeApp:client-${{ github.sha }}
         sleep 10
-        curl localhost:8080/api/status
+        curl localhost:8080/
         exit $?
     - name: Push image
       run: |
-        docker tag ghcr.io/elliemehl/KubeApp:server-${{ github.sha }} ghcr.io/elliemehl/KubeApp:server
-        docker push ghcr.io/elliemehl/KubeApp:server
+        docker tag ghcr.io/elliemehl/KubeApp:client-${{ github.sha }} ghcr.io/elliemehl/KubeApp:client
+        docker push ghcr.io/elliemehl/KubeApp:client
 
