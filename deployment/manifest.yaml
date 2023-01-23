@@ -1,0 +1,107 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kube_app
+  labels:
+    name: kube_app
+--- # Let's deploy the server first!
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server
+  namespace: kube_app
+  labels:
+    app: server-kube_app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: server-kube_app
+  template:
+    metadata:
+      labels:
+        app: server-kube_app
+    spec:
+      containers:
+      - name: server
+        image: ghcr.io/elliemehl/kube_app:server
+        env:
+          - name: APP_PORT
+            value: "8080"
+        ports:
+          - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: server-svc
+  namespace: kube_app
+spec:
+  selector:
+    app: server-kube_app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+--- # Let's deploy the client!
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client
+  namespace: kube_app
+  labels:
+    app: client-kube_app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: client-kube_app
+  template:
+    metadata:
+      labels:
+        app: client-kube_app
+    spec:
+      containers:
+      - name: client
+        image: ghcr.io/elliemehl/kube_app:client
+        command: [ "bash", "-c", "node index.js" ] ## TODO: figure out this command
+        ports:
+          - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: client-svc
+  namespace: kube_app
+spec:
+  selector:
+    app: client-kube_app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kube_app-ingress
+  namespace: kube_app
+spec:
+  rules:
+    - host: "toy.parcae.office.kingsds.network" #"toy.localhost"
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/api"
+            server:
+              service:
+                name: server-svc
+                port:
+                  number: 80
+          - pathType: Prefix
+            path: "/"
+            server:
+              service:
+                name: client-svc
+                port:
+                  number: 80
